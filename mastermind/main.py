@@ -1,43 +1,17 @@
 from random import randint
 
-# Constants and global variable
+from termcolor import colored, cprint, COLORS, HIGHLIGHTS
 
-color = {
-    1: ['rouge', 41],
-    2: ['jaune', 93],
-    3: ['vert', 42],
-    4: ['bleu', 44],
-    5: ['mauve', 45],
-    6: ['orange', 2],
-    7: ['rose', 46],
-    8: ['blanc', 47]
-}
+# Constants and global variables
 
-class PrintColours:
+color = {i:list(HIGHLIGHTS.keys())[i+2] for i in range(1, 9)}
 
-  def __init__(self, string) -> None:
-    assert isinstance(string, str)
-
-    self.string = string
-    self.bg_color = 0
-    self.style = 0
-    self.tx_color = 0
-
-  def style_text(self, code):
-    self.style = code
-    return self
-
-  def color_text(self, code):
-    self.tx_color = code
-    return self
-
-  def background(self, code):
-    self.bg_color = code
-    return self
-
-  def __str__(self) -> str:
-    #return f"\33[{self.bg_color}m\33[{self.tx_color}m\33[{self.style}m" + self.string + "\33[0m"
-    return f"\33[{self.bg_color}m" + self.string + "\33[0m"
+# Static functions
+def comb_to_ui(code):
+  _colored = ""
+  for character in code:
+    _colored += colored(f"{str(character):^3s}", "black", color[int(character)])
+  return _colored
 
 # Functions
 def regles():
@@ -169,7 +143,7 @@ def jeu():
     combinaison = genere_combinaison(nd)
     gagne = False
     for nbEssai in range(12):
-      #printColours(combinaison)
+      print(comb_to_ui(combinaison))
       proposition = entrer_proposition(nbEssai, nd)
       nbBp = nb_couleur_Bp(combinaison, proposition)
       if nbBp == nd:
@@ -183,14 +157,6 @@ def jeu():
       print("\n\033[1mVous avez perdu!\033[0m")
     if input("Voulez vous rejouez? (oui/non) : ").lower() == "non":
       jouer = False
-
-def indexToANSI(t, bg=0, st=0, co=0):
-  ansi = PrintColours(t).background(bg).color_text(co).style_text(st)
-  return str(ansi)
-
-def printColours(colourList):
-  colourful = [indexToANSI(str(e), bg=color[e][1]) for e in colourList]
-  print(indexToANSI("1", bg=1))
 
 if __name__ == "__main__":
   jeu()
