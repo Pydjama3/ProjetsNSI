@@ -1,162 +1,304 @@
 from random import randint
 
-from termcolor import colored, cprint, COLORS, HIGHLIGHTS
+from termcolor import colored, HIGHLIGHTS  # il faut colorama pour windows (je crois)
+
+# TODO: trouver un easter-egg (ex: pouvoir gagner le jeu en nombre
+#  négatif ou null d'essais (rentrer la réponse avant le jeu)
 
 # Constants and global variables
 
-color = {i:list(HIGHLIGHTS.keys())[i+2] for i in range(1, 9)}
+color = {i: list(HIGHLIGHTS.keys())[i + 2] for i in range(1, 9)}
+color["?"] = "on_black"
 
-# Static functions
-def comb_to_ui(code):
-  _colored = ""
-  for character in code:
-    _colored += colored(f"{str(character):^3s}", "black", color[int(character)])
-  return _colored
+last_log = []
 
-# Functions
+ESSAIS = 12
+
+
+
+# Static asset functions
+def comb_to_ui(code: list[int | str]) -> str:
+    """
+    Transforme une liste de nombres (références à des couleurs) en une chaine de caractères pour sortie terminal en
+    couleur
+
+    :param code: The chain of numbers representing color values
+    :return: Text containing ANSI codes for coloration
+
+    :author: Elias
+    :note: Pff, j'ai pas su quoi choisir entre le RST et EpyText pour la docu -> RST est populaire et utilisé par PyCharm, RpyText supporte @author et @note...:
+    """
+    _colored = ""
+    for character in code:
+        _colored += colored(
+            f"{str(character):^3s}",
+            color="white" if character == "?" else "black",  # ? --> place hasn't been assigned to a value
+            on_color=color[character]
+        )
+    return _colored
+
+
+def reset_line():
+    """
+    "Resets" la ligne actuelle de la console
+
+    :author: Elias
+    """
+    print(f"\33[2K\r", end="")
+    # utlisation de codes ANSI pour éffacer la ligne (\33[2K)
+    # et remettre le curseur au début (\r)
+
+
+def move_up(n: int = 1):
+    """
+    Monter de n lignes dans la console
+
+    :param n: le nombre de lignes qu'il faut remonter
+    :author: Elias
+    """
+    print(f"\033[{n}A", end="")
+    # utilisation du code ANSI \33[xA ou x correspond
+    # au nombre de lignes dont le curseur doit remonter
+
+
+def space(n: int = 1):
+    """
+    Permet d'aérer le texte dans le console
+
+    :param n: le nombre de lignes à sauter
+
+    :author: Elias
+    """
+    [print() for i in range(n)]  # c'est pas beau...
+    # print() --> end="\n" par défaut donc retour à la ligne
+
+
+# Game Functions
 def regles():
-  """ 
-  Cette fonction affiche les regles du Mastermind.
-  """
-  print("Bienvenue dans le jeu du Mastermind !")
-  print("Le but du jeu est de trouver une combinaison de 4 couleurs choisies par l'ordinateur.")
-  print("Chaque couleur peut prendre les valeurs : rouge, jaune, vert, bleu, mauve, orange, rose, blanc.")
-  print("Au lieu d'entrer les couleurs a chaque fois, vous devez entrer un chiffre entre 1 et 8.")
-  print("Chaque chiffre correspond a une couleur.")
-  print("Vous avez 12 essais pour trouver la bonne combinaison.")
-  print("Bonne chance !")
+    """
+    Cette fonction affiche les regles du Mastermind.
 
-def difficulte():
-  '''
-  Cette fonction demande à l'utilisateur de choisir un niveau de difficulté.
-  Returns:
-    nd (int) : le numero correspondant à la difficultée (facile = 3, moyen = 4, difficile = 5)
-  '''
-  nd = ""
-  while nd != "facile" and nd != "moyen" and nd != "difficile":
-    nd = input("\nQuelle difficultée voulez vous ? (facile/moyen/difficile) : ").lower()
-  if nd == "facile":
-    nd = 3
-  elif nd == "moyen":
-    nd = 4
-  else:
-    nd = 5
-  return nd
+    :author: Louis
+    """
+    print("Bienvenue dans le jeu du Mastermind !")
+    print("Le but du jeu est de trouver une combinaison de couleurs choisies par l'ordinateur.")
+    print("Le nombre de couleurs à trouver dépend de la dificulté choisie: facile, moyen, ou difficle.")
+    print("Chaque couleur peut prendre les valeurs : rouge, jaune, vert, bleu, mauve, orange, rose, blanc.")
+    # Pas sûr du tout des couleurs, c'est pas comme si quelqu'un allait faire attention
+    # (surout pas comme si quelqu'un allait lire cette docu *wink* *wink*)
+    print("Au lieu d'entrer les couleurs a chaque fois, vous devez entrer un chiffre entre 1 et 8.")
+    print("Chaque chiffre correspond a une couleur.")
+    print("Si vous avez déjà fait une proposition, en appuyant sur entrée seul, vous pouvez répéter la couleur de la "
+          "dernière proposition")
+    print("Vous avez 12 essais pour trouver la bonne combinaison.")
+    print("Bonne chance !")
 
-def genere_combinaison(nd=4):
-  """
-  Cette fonction génère une combinaison de 4 chiffres choisis au hasard entre 1 et 8.
-  Paramètre:
-    nd (int) : la longueur de la combinaison generer
-  Returns: 
-    combinaison (list) : la combinaison de couleur de longueur nd
-  """
-  combinaison = []
-  for _ in range(nd):
-    combinaison.append(randint(1, 8))
-  return combinaison
 
-def entrer_proposition(nbEssai, nd=4):
-  """
-  Cette fonction demande à l'utilisateur de saisir une combinaison de 4 chiffres choisis
-  entre 1 et 8.
-  Paramètre:
-    nbEssai (int) : le numero de l'essai de l'utilisateur
-    nd (int) : la longueur de la proposition que l'utilisateur doit entrer
-  Returns:
-    proposition (list) : les 4 propositions que l'utilisateur veut tester
-  """
-  proposition = []
-  print("\n\033[1mEssai numero", nbEssai+1,"\033[0m")
-  for _ in range(nd):
-    num = input("Entrez une couleur : ")
-    while isinstance(num, int) is False:
-      try:
-        num = int(num)
-        if num < 1 or num > 8:
-          num = input("\033[1ARe-entrez une couleur : \033[K")
-          continue
-      except ValueError:
-        num = input("\033[1ARe-entrez une couleur : \033[K")
-        continue
-    proposition.append(num)
-  return proposition
+def difficulte() -> int:
+    """
+    Cette fonction demande à l'utilisateur de choisir un niveau de difficulté.
 
-def nb_couleur_Bp(combinaison, proposition):
-  """
-  Cette fonction compte le nombre de couleurs bien placées.
-  Paramètres:
-    combinaison (list) : la combinaison de couleur
-    proposition (list) : les 4 propositions que l'utilisateur veut tester
-  Returns:
-    count (int) : le nombre de couleurs bien placées 
-  """
-  count = 0
-  for i in range(len(combinaison)):
-    if combinaison[i] == proposition[i]:
-      count += 1
-  return count
+    :return: Le niveau de difficulté renseigné par l'utilisateur
 
-def nb_couleur_Mp(combinaison, proposition):
-  """
-  Cette fonction compte le nombre de couleurs mal placées.
-  Paramètres:
-    combinaison (list) : la combinaison de couleur
-    proposition (list) : les 4 propositions que l'utilisateur veut tester
-  Returns:
-    nb (int) : le nombre de couleurs mal placées 
-  """
-  nb = 0
-  dCombinaison = {}
-  for i in combinaison:
-    if i in dCombinaison:
-      dCombinaison[i] += 1
+    :author: Louis
+    """
+
+    nd = ""  # là c'est du str, puis après... (voir assignations à la suite)
+    while nd != "facile" and nd != "moyen" and nd != "difficile":  # "nd in <list>" serait plus simple
+        nd = input("Quelle difficultée voulez vous ? (facile/moyen/difficile):").lower()
+
+    if nd == "facile":  # un switch serait peut être plus joli
+        nd = 3  # ... c'est un int -_- heureusement qu'on est en python
+    elif nd == "moyen":
+        nd = 4
     else:
-      dCombinaison[i] = 1
+        nd = 5
+    return nd
 
-  dProposition = {}
-  for i in proposition:
-    if i in dProposition:
-      dProposition[i] += 1
-    else:
-      dProposition[i] = 1
 
-  dResult = {}
-  for color in dProposition:
-    if color in dCombinaison:
-      if dCombinaison[color] >= dProposition[color]:
-        dResult[color] = dProposition[color]
-      else:
-        dResult[color] = dCombinaison[color]
+def genere_combinaison(nd: int = 4) -> list[int]:
+    """
+    Cette fonction génère une combinaison de 4 chiffres choisis au hasard entre 1 et 8.
 
-  nb = sum(dResult.values())
-  return nb
+    :param nd: la longueur de la combinaison generer
+    :return: la combinaison générée aléatoirment de la longeur spécifiée
+
+    :author: Florence
+    """
+    combinaison = []
+    for _ in range(nd):
+        combinaison.append(randint(1, 8))
+    return combinaison
+
+
+def entrer_proposition(nb_essai: int, nd: int = 4) -> list:
+    """
+    Cette fonction demande à l'utilisateur de saisir une combinaison de 4 chiffres choisis
+    entre 1 et 8.
+
+    :param nb_essai: le numero de l'essai de l'utilisateur
+    :param nd: la longueur de la proposition que l'utilisateur doit entrer
+    :return: les 4 propositions que l'utilisateur veut tester
+
+    :author: Elias
+    :note: C'est vraiment, mais alors vraiment pas joli tout ça
+    """
+    global last_log
+
+    proposition = ["?" for i in range(nd)]
+
+    essai_log = f"\033[1mEssai numero {nb_essai}\033[0m"  # Beurk, le formattage et les code ANSI...
+    essai_place = f"{essai_log:<23s}"  # Pour que toutes les lignes soient allignées (pas que 10, 11, et 12 décalent)
+
+    print(f"{essai_place} - {comb_to_ui(proposition)} - ", end="")  # Début de la ligne (1x)
+
+    for i in range(nd):  # il ya sans doute un moyen (simple) de simplifier tout ce beau monde
+        num = input("Entrez une couleur: ")  # input (1x)
+        while isinstance(num, int) is False:
+            move_up()
+            reset_line()
+
+            try:
+                num = int(num)
+                if num < 1 or num > 8:
+                    print(f"{essai_place} - {comb_to_ui(proposition)} - ", end="")  # (2x)
+                    num = input("Re-entrez une couleur: \033[K")  # (1x)
+                    continue
+                else:
+                    proposition[i] = num
+
+            except ValueError:
+                if num == "" and len(last_log) > 0:
+                    proposition[i] = last_log[i]
+                    print(f"{essai_place} - {comb_to_ui(proposition)} - ", end="")  # (3x)
+                    break
+                else:
+                    print(f"{essai_place} - {comb_to_ui(proposition)} - ", end="")  # (4x)
+                    num = input("Re-entrez une couleur: \033[K")  # (3x)
+                    continue
+
+            print(f"{essai_place} - {comb_to_ui(proposition)} - ", end="")  # (5x)
+
+    return proposition
+
+
+def nb_couleur_Bp(combinaison: list, proposition: list) -> int:
+    """
+    Cette fonction compte le nombre de couleurs bien placées.
+
+    :param combinaison: la combinaison de couleur
+    :param proposition: les 4 propositions que l'utilisateur veut tester
+    :return: le nombre de couleurs bien placées
+
+    :author: Florence
+    """
+
+    count = 0
+    for i in range(len(combinaison)):
+        if combinaison[i] == proposition[i]:
+            count += 1
+    return count
+
+
+def nb_couleur_Mp(combinaison: list, proposition: list) -> int:
+    """
+    Cette fonction compte le nombre de couleurs mal placées.
+
+    :param combinaison: la combinaison de couleur
+    :param proposition: les 4 propositions que l'utilisateur veut tester
+    :return: le nombre de couleurs mal placées
+
+    :author: Louis (& Elias)
+    :note: Cette fonction parait exagérément compliquée pour ce qu'elle fait mais le vendredi aprem a eu raison de moi
+    """
+    # Nombre d'occurences de chaque couleur dans la combinaison
+    d_combinaison = {}
+    for i in combinaison:
+        if i in d_combinaison:
+            d_combinaison[i] += 1
+        else:
+            d_combinaison[i] = 1
+
+    # Nombre d'occurences de chaque couleur dans la proposiion
+    d_proposition = {}
+    for i in proposition:
+        if i in d_proposition:
+            d_proposition[i] += 1
+        else:
+            d_proposition[i] = 1
+
+    # Je sais plus ce que ça fait...
+    # Ah si, ça prend la plus petite valeur d'occurence de la couleur entre le combinaison et le proposition
+    # (ne prend pas en compte le placement)
+    # Exemple 1: proposition.jaune = 2 et combinaison.jaune = 1 --> 1 seule couleur est juste
+    # Exemple 2: proposition.jaune = 1 et combinaison.jaune = 2 --> 1 seule couleur est juste
+    nb = 0
+    for _color in d_proposition:
+        if _color in d_combinaison:
+            if d_combinaison[_color] >= d_proposition[_color]:
+                nb += d_proposition[_color]
+            else:
+                nb += d_combinaison[_color]
+    return nb
+
 
 def jeu():
-  """
-  Cette fonction gère le jeu en lui même.
-  """
-  jouer = True
-  regles()
-  nd = difficulte()
-  while jouer:
-    combinaison = genere_combinaison(nd)
-    gagne = False
-    for nbEssai in range(12):
-      print(comb_to_ui(combinaison))
-      proposition = entrer_proposition(nbEssai, nd)
-      nbBp = nb_couleur_Bp(combinaison, proposition)
-      if nbBp == nd:
-        print("\n\033[1mVous avez gagné en", nbEssai+1, "essais!\033[0m")
-        gagne = True
-        break
-      nbMp = nb_couleur_Mp(combinaison, proposition) - nbBp
-      print("Vous avez trouvé", nbBp, "couleurs bien placées.")
-      print("Vous avez trouvé", nbMp, "couleurs mal placées.")
-    if not gagne:
-      print("\n\033[1mVous avez perdu!\033[0m")
-    if input("Voulez vous rejouez? (oui/non) : ").lower() == "non":
-      jouer = False
+    """
+    Cette fonction gère le jeu en lui même.
+
+    :author: Florence, Louis, et Elias
+    """
+    global last_log
+
+    jouer = True  # nous rejouerons
+
+    regles()
+    space()
+    nd = difficulte()
+    space()
+
+    # le choix itératif, la récurson aurait aussi pu fonctionner
+    while jouer:
+        last_log.clear()  # pour chaque parti il faut réinitialiser le cache
+        combinaison = genere_combinaison(nd)
+        gagne = False
+
+        # le joueur a <ESSAI> essais
+        nb_essai = 1
+        for nb_essai in range(1, ESSAIS+1):
+            proposition = entrer_proposition(nb_essai, nd)
+            last_log = proposition  # pour le système de la dernière proposition en mémoire
+
+            nb_bp = nb_couleur_Bp(combinaison, proposition)
+            nb_mp = nb_couleur_Mp(combinaison, proposition) - nb_bp  # pour obtenir que ceux qui sont mal placés
+
+            print(f"{nb_bp}\U00002705 et {nb_mp}\U00002713")  # \U0000<x> sont des emojis unicode
+
+            if nb_bp == nd:
+                gagne = True
+                break
+
+        space()
+
+        # la personne a perdu: on lui montre la solution
+        if not gagne:
+            print(f"\033[1mVous avez perdu! La solution était: \033[0m {comb_to_ui(combinaison)} ")
+            space()
+            print("Retentez votre chance !")
+
+        # la personne a gagné: on lui donne son nombre d'essais
+        else:
+            print("\033[1mVous avez gagné en", nb_essai, "essais!\033[0m")
+            space()
+            print("Vous êtes imbattable (ou pas ?)..." if nb_essai == 1 else "Vous pouvez (sans doute) mieux faire !")
+
+
+        # gagnant comme perdant on leur propose de rejouer
+        if input("Voulez vous rejouez? (oui/non): ").lower() == "non":
+            jouer = False  # nous ne rejouerons pas
+
+        space()
+
 
 if __name__ == "__main__":
-  jeu()
+    jeu()  # lancement du jeu
