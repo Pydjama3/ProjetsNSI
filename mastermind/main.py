@@ -68,7 +68,7 @@ def space(n: int = 1):
 
     :author: Elias
     """
-    [print() for i in range(n)]  # c'est pas beau...
+    [print() for _ in range(n)]  # c'est pas beau...
     # print() --> end="\n" par défaut donc retour à la ligne
 
 
@@ -153,7 +153,7 @@ def entrer_proposition(nb_essai: int, nd: int = 4) -> list:
     """
     global last_log
 
-    proposition = ["?" for i in range(nd)]
+    proposition = ["?" for _ in range(nd)]
 
     essai_log = f"\033[1mEssai numero {nb_essai}\033[0m"  # Beurk, le formattage et les code ANSI...
     essai_place = f"{essai_log:<23s}"  # Pour que toutes les lignes soient allignées (pas que 10, 11, et 12 décalent)
@@ -299,7 +299,6 @@ def jeu():
             print("\033[1mVous avez gagné en", nb_essai, "essais!\033[0m")
             space()
             print("Vous êtes imbattable (ou pas ?)..." if nb_essai == 1 else "Vous pouvez (sans doute) mieux faire !")
-
 
         # gagnant comme perdant on leur propose de rejouer
         if input("Voulez vous rejouez? (oui/non): ").lower() == "non":
