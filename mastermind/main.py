@@ -77,7 +77,7 @@ def regles():
     """
     Cette fonction affiche les regles du Mastermind.
 
-    :author: Louis
+    :author: Louis, Florence
     """
     space()
     print("\x1B[4mBienvenue dans le jeu du Mastermind !\x1B[0m")
