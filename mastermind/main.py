@@ -1,19 +1,28 @@
 from random import randint
 
-from termcolor import colored, HIGHLIGHTS  # il faut colorama pour windows (je crois)
+from termcolor import colored  # il faut colorama pour windows (je crois)
 
 # TODO: trouver un easter-egg (ex: pouvoir gagner le jeu en nombre
 #  négatif ou null d'essais (rentrer la réponse avant le jeu)
 
 # Constants and global variables
 
-color = {i: list(HIGHLIGHTS.keys())[i + 2] for i in range(1, 9)}
-color["?"] = "on_black"
+color = {
+    # définit tous les couleurs associés à chaque nombre 
+    1: "on_light_magenta",
+    2: "on_red",  
+    3: "on_light_red",
+    4: "on_green",
+    5: "on_light_green",
+    6: "on_blue",
+    7: "on_light_cyan",
+    8: "on_cyan",
+    "?": "on_black"
+}
 
 last_log = []
 
 ESSAIS = 12
-
 
 # Static asset functions
 def comb_to_ui(code: list[int | str]) -> str:
@@ -270,7 +279,7 @@ def jeu():
         last_log.clear()  # pour chaque parti il faut réinitialiser le cache
         combinaison = genere_combinaison(nd)
         gagne = False
-
+        
         # le joueur a <ESSAI> essais
         nb_essai = 1
         for nb_essai in range(1, ESSAIS+1):
@@ -298,14 +307,13 @@ def jeu():
         else:
             print("\033[1mVous avez gagné en", nb_essai, "essais!\033[0m")
             space()
-            print("Vous êtes imbattable (ou pas ?)..." if nb_essai == 1 else "Vous pouvez (sans doute) mieux faire !")
+            print("Vous trichez ?" if nb_essai == 1 else "Vous pouvez (sans doute) mieux faire !")
 
         # gagnant comme perdant on leur propose de rejouer
-        if input("Voulez vous rejouez? (oui/non): ").lower() == "non":
-            jouer = False  # nous ne rejouerons pas
+        if input("Voulez vous rejouez? (oui/non): ").lower() != "oui":  
+          jouer = False 
 
         space()
-
 
 if __name__ == "__main__":
     jeu()  # lancement du jeu
