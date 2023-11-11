@@ -7,7 +7,7 @@ from termcolor import colored  # il faut colorama pour windows (je crois)
 color = {
     # définit tous les couleurs associés à chaque nombre 
     1: "on_light_magenta",
-    2: "on_red",  
+    2: "on_red",
     3: "on_light_red",
     4: "on_green",
     5: "on_light_green",
@@ -20,6 +20,7 @@ color = {
 last_log = []
 
 ESSAIS = 12
+
 
 # Static asset functions
 def comb_to_ui(code: list[int | str]) -> str:
@@ -37,7 +38,7 @@ def comb_to_ui(code: list[int | str]) -> str:
     for character in code:
         _colored += colored(
             f"{str(character):^3s}",
-            color="white" if character == "?" else "black",  
+            color="white" if character == "?" else "black",
             # ? --> place hasn't been assigned to a numerical value
             on_color=color[character]
         )
@@ -115,20 +116,19 @@ def difficulte() -> int:
     :author: Louis, Florence
     """
     liste_difficulte = ["facile", "moyen", "difficile"]
-    nd = 0 
     difficulte = ""
     while difficulte not in liste_difficulte:
         difficulte = input("Quelle difficultée voulez vous ? (facile/moyen/difficile): ").lower()
         if difficulte not in liste_difficulte:
-          move_up()
-          reset_line()
+            move_up()
+            reset_line()
 
-    if difficulte == "facile": 
-      nd = 3 
-    elif difficulte == "difficile": 
-      nd = 5
-    else: 
-      nd = 4
+    if difficulte == "facile":
+        nd = 3
+    elif difficulte == "difficile":
+        nd = 5
+    else:
+        nd = 4
     return nd
 
 
@@ -168,7 +168,7 @@ def entrer_proposition(nb_essai: int, nd: int = 4) -> list:
 
     print(f"{essai_place} - {comb_to_ui(proposition)} - ", end="")  # Début de la ligne (1x)
 
-    for i in range(nd):  # il ya sans doute un moyen (simple) de simplifier tout ce beau monde
+    for i in range(nd):  # il y a sans doute un moyen (simple) de simplifier tout ce beau monde
         num = input("Entrez une couleur: ")  # input (1x)
         while isinstance(num, int) is False:
             move_up()
@@ -277,10 +277,10 @@ def jeu():
         combinaison = genere_combinaison(nd)
         # print(combinaison) si vous voulez tricher...
         gagne = False
-        
+
         # le joueur a <ESSAI> essais
         nb_essai = 1
-        for nb_essai in range(1, ESSAIS+1):
+        for nb_essai in range(1, ESSAIS + 1):
             proposition = entrer_proposition(nb_essai, nd)
             last_log = proposition  # pour le système de la dernière proposition en mémoire
 
@@ -308,10 +308,11 @@ def jeu():
             space()
 
         # gagnant comme perdant on leur propose de rejouer
-        if input("Voulez vous rejouez? (oui/non): ").lower() != "oui":  
-          jouer = False 
-          
+        if input("Voulez vous rejouez? (oui/non): ").lower() != "oui":
+            jouer = False
+
         space()
+
 
 if __name__ == "__main__":
     jeu()  # lancement du jeu
