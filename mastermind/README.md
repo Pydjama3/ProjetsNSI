@@ -10,4 +10,5 @@ Attention: Si vous avez déjà fait une proposition, en appuyant sur "entrée" s
 Après chaque proposition, le jeu vous donnera les informations suivantes:  
 - le nombre de couleurs bien placées (✅)
 - le nombre de couleurs mal placées (✓)
+
 Vous avez 12 essais pour trouver la bonne combinaison. Bonne chance !

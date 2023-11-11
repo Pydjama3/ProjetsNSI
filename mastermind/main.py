@@ -2,9 +2,6 @@ from random import randint
 
 from termcolor import colored  # il faut colorama pour windows (je crois)
 
-# TODO: trouver un easter-egg (ex: pouvoir gagner le jeu en nombre
-#  négatif ou null d'essais (rentrer la réponse avant le jeu)
-
 # Constants and global variables
 
 color = {
@@ -40,7 +37,8 @@ def comb_to_ui(code: list[int | str]) -> str:
     for character in code:
         _colored += colored(
             f"{str(character):^3s}",
-            color="white" if character == "?" else "black",  # ? --> place hasn't been assigned to a value
+            color="white" if character == "?" else "black",  
+            # ? --> place hasn't been assigned to a numerical value
             on_color=color[character]
         )
     return _colored
@@ -86,7 +84,7 @@ def regles():
     """
     Cette fonction affiche les regles du Mastermind.
 
-    :author: Louis, Florence
+    :author: Louis, Florence 
     """
     space()
     print("\x1B[4mBienvenue dans le jeu du Mastermind !\x1B[0m")
@@ -96,9 +94,6 @@ def regles():
     space()
     print("Au lieu d'entrer les couleurs a chaque fois, vous devez entrer un chiffre entre 1 et 8.")
     print("Chaque chiffre correspond a une couleur:", " ; ".join([comb_to_ui([i]) for i in range(1, 9)]))
-    # Pas sûr du tout des couleurs, c'est pas comme si quelqu'un allait faire attention
-    # on ne va donc pas les nommer
-    # (surout, c'est pas comme si quelqu'un allait lire cette docu *wink* *wink*)
     space()
     print("\t\x1b[3mSi vous avez déjà fait une proposition, en appuyant sur \"entrée\" seul,\n "
           "\tvous pouvez répéter la couleur de la dernière proposition à cet emplacement \x1b[0m")
@@ -117,19 +112,23 @@ def difficulte() -> int:
 
     :return: Le niveau de difficulté renseigné par l'utilisateur
 
-    :author: Louis
+    :author: Louis, Florence
     """
+    liste_difficulte = ["facile", "moyen", "difficile"]
+    nd = 0 
+    difficulte = ""
+    while difficulte not in liste_difficulte:
+        difficulte = input("Quelle difficultée voulez vous ? (facile/moyen/difficile): ").lower()
+        if difficulte not in liste_difficulte:
+          move_up()
+          reset_line()
 
-    nd = ""  # là c'est du str, puis après... (voir assignations à la suite)
-    while nd != "facile" and nd != "moyen" and nd != "difficile":  # "nd in <list>" serait plus simple
-        nd = input("Quelle difficultée voulez vous ? (facile/moyen/difficile): ").lower()
-
-    if nd == "facile":  # un switch serait peut être plus joli
-        nd = 3  # ... c'est un int -_- heureusement qu'on est en python
-    elif nd == "moyen":
-        nd = 4
-    else:
-        nd = 5
+    if difficulte == "facile": 
+      nd = 3 
+    elif difficulte == "difficile": 
+      nd = 5
+    else: 
+      nd = 4
     return nd
 
 
@@ -143,7 +142,7 @@ def genere_combinaison(nd: int = 4) -> list[int]:
     :author: Florence
     """
     combinaison = []
-    for _ in range(nd):
+    for i in range(nd):
         combinaison.append(randint(1, 8))
     return combinaison
 
@@ -157,7 +156,7 @@ def entrer_proposition(nb_essai: int, nd: int = 4) -> list:
     :param nd: la longueur de la proposition que l'utilisateur doit entrer
     :return: les 4 propositions que l'utilisateur veut tester
 
-    :author: Elias
+    :author: Elias, Louis
     :note: C'est vraiment, mais alors vraiment pas joli tout ça
     """
     global last_log
@@ -174,7 +173,6 @@ def entrer_proposition(nb_essai: int, nd: int = 4) -> list:
         while isinstance(num, int) is False:
             move_up()
             reset_line()
-
             try:
                 num = int(num)
                 if num < 1 or num > 8:
@@ -195,7 +193,6 @@ def entrer_proposition(nb_essai: int, nd: int = 4) -> list:
                     continue
 
             print(f"{essai_place} - {comb_to_ui(proposition)} - ", end="")  # (5x)
-
     return proposition
 
 
@@ -278,6 +275,7 @@ def jeu():
     while jouer:
         last_log.clear()  # pour chaque parti il faut réinitialiser le cache
         combinaison = genere_combinaison(nd)
+        # print(combinaison) si vous voulez tricher...
         gagne = False
         
         # le joueur a <ESSAI> essais
@@ -306,13 +304,13 @@ def jeu():
         # la personne a gagné: on lui donne son nombre d'essais
         else:
             print("\033[1mVous avez gagné en", nb_essai, "essais!\033[0m")
-            space()
             print("Vous trichez ?" if nb_essai == 1 else "Vous pouvez (sans doute) mieux faire !")
+            space()
 
         # gagnant comme perdant on leur propose de rejouer
         if input("Voulez vous rejouez? (oui/non): ").lower() != "oui":  
           jouer = False 
-
+          
         space()
 
 if __name__ == "__main__":
