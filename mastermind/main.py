@@ -134,7 +134,7 @@ def difficulte() -> int:
 
 def genere_combinaison(nd: int = 4) -> list[int]:
     """
-    Cette fonction génère une combinaison de 4 chiffres choisis au hasard entre 1 et 8.
+    Cette fonction génère une combinaison de <nd> (=4 par défaut) chiffres choisis au hasard entre 1 et 8.
 
     :param nd: la longueur de la combinaison generer
     :return: la combinaison générée aléatoirment de la longeur spécifiée
@@ -149,12 +149,12 @@ def genere_combinaison(nd: int = 4) -> list[int]:
 
 def entrer_proposition(nb_essai: int, nd: int = 4) -> list:
     """
-    Cette fonction demande à l'utilisateur de saisir une combinaison de 4 chiffres choisis
+    Cette fonction demande à l'utilisateur de saisir une combinaison de <nd> (=4 par défaut) chiffres choisis
     entre 1 et 8.
 
     :param nb_essai: le numero de l'essai de l'utilisateur
     :param nd: la longueur de la proposition que l'utilisateur doit entrer
-    :return: les 4 propositions que l'utilisateur veut tester
+    :return: les <nd> propositions que l'utilisateur veut tester
 
     :author: Elias, Louis
     :note: C'est vraiment, mais alors vraiment pas joli tout ça
@@ -201,7 +201,7 @@ def nb_couleur_Bp(combinaison: list, proposition: list) -> int:
     Cette fonction compte le nombre de couleurs bien placées.
 
     :param combinaison: la combinaison de couleur
-    :param proposition: les 4 propositions que l'utilisateur veut tester
+    :param proposition: les propositions que l'utilisateur veut tester
     :return: le nombre de couleurs bien placées
 
     :author: Florence
@@ -219,7 +219,7 @@ def nb_couleur_Mp(combinaison: list, proposition: list) -> int:
     Cette fonction compte le nombre de couleurs mal placées.
 
     :param combinaison: la combinaison de couleur
-    :param proposition: les 4 propositions que l'utilisateur veut tester
+    :param proposition: les propositions que l'utilisateur veut tester
     :return: le nombre de couleurs mal placées
 
     :author: Louis (& Elias)
